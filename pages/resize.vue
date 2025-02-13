@@ -1,110 +1,99 @@
 <template>
   <div class="container mx-auto p-4 max-w-2xl">
-    <h1 class="text-2xl font-bold mb-6">图片尺寸调整</h1>
-    
-    <!-- 图片上传区域 -->
-    <div
-      class="border-2 border-dashed border-gray-300 rounded-lg p-8 mb-6 text-center"
-      @drop.prevent="handleDrop"
-      @dragover.prevent
-      @dragenter.prevent
-    >
-      <input
-        type="file"
-        ref="fileInput"
-        @change="handleFileSelect"
-        accept="image/*"
-        class="hidden"
-      />
-      <div v-if="isLoading" class="text-center py-8">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
-        <p class="mt-2 text-gray-600">正在处理图片...</p>
-      </div>
-      
-      <div v-else-if="errorMessage" class="text-center py-8">
-        <p class="text-red-500">{{ errorMessage }}</p>
-        <button
-          @click="errorMessage = '';"
-          class="mt-4 text-blue-500 hover:text-blue-600"
-        >
-          重试
-        </button>
-      </div>
-      
-      <div v-else-if="!imageUrl" class="space-y-4">
-        <div class="text-gray-500">
-          拖拽图片到此处或
-          <button
-            @click="$refs.fileInput.click()"
-            class="text-blue-500 hover:text-blue-600"
-          >
-            点击上传
-          </button>
+    <el-card>
+      <template #header>
+        <div class="text-center">
+          <span class="text-xl font-medium">图片尺寸调整</span>
         </div>
-        <p class="text-sm text-gray-400">支持 JPG、PNG 格式</p>
-      </div>
-      <img
-        v-else
-        :src="imageUrl"
-        class="max-w-full max-h-[300px] mx-auto"
-        alt="预览图"
-      />
-    </div>
+      </template>
 
-    <!-- 尺寸调整控制面板 -->
-    <div v-if="imageUrl" class="space-y-4">
-      <div class="flex space-x-4">
-        <div class="flex-1">
-          <label class="block text-sm font-medium text-gray-700 mb-1">宽度 (px)</label>
-          <input
-            type="number"
-            v-model="width"
-            @input="handleWidthChange"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md"
-          />
-        </div>
-        <div class="flex-1">
-          <label class="block text-sm font-medium text-gray-700 mb-1">高度 (px)</label>
-          <input
-            type="number"
-            v-model="height"
-            @input="handleHeightChange"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md"
-          />
-        </div>
-      </div>
-
-      <div class="flex items-center space-x-2">
-        <input
-          type="checkbox"
-          id="maintainAspectRatio"
-          v-model="maintainAspectRatio"
-          class="rounded text-blue-500"
-        />
-        <label for="maintainAspectRatio" class="text-sm text-gray-700">
-          保持宽高比
-        </label>
-      </div>
-
-      <button
-        @click="downloadImage"
-        class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors"
+      <!-- 图片上传区域 -->
+      <el-upload
+          class="upload-area mb-6"
+          drag
+          :auto-upload="false"
+          :show-file-list="false"
+          accept="image/*"
+          :on-change="handleFileSelect"
       >
-        下载调整后的图片
-      </button>
-    </div>
+        <template #trigger>
+          <div v-if="!imageUrl && !isLoading && !errorMessage" class="text-center">
+            <el-icon class="el-icon--upload mx-auto block"><upload-filled /></el-icon>
+            <div class="el-upload__text">
+              拖拽图片到此处或 <em>点击上传</em>
+            </div>
+            <div class="text-sm text-gray-400 mt-2">支持 JPG、PNG 格式</div>
+          </div>
+        </template>
+      </el-upload>
+
+      <div v-if="isLoading" class="text-center py-8">
+        <el-icon class="is-loading mb-2" :size="24"><loading /></el-icon>
+        <div class="text-gray-600">正在处理图片...</div>
+      </div>
+
+      <div v-else-if="errorMessage" class="text-center py-8">
+        <el-alert
+            :title="errorMessage"
+            type="error"
+            :closable="false"
+            class="mb-4"
+        />
+        <el-button type="primary" @click="errorMessage = ''">
+          重试
+        </el-button>
+      </div>
+
+      <el-image
+          v-else-if="imageUrl"
+          :src="imageUrl"
+          fit="contain"
+          class="mx-auto block max-h-[300px] mt-4"
+      />
+
+      <!-- 尺寸调整控制面板 -->
+      <el-form v-if="imageUrl" class="mt-6 w-full max-w-3xl mx-auto">
+        <el-form-item label="缩放比例" class="mb-6">
+          <el-row class="items-center justify-center">
+            <el-col :span="16">
+              <el-slider
+                  v-model="scale"
+                  :min="1"
+                  :max="100"
+                  :format-tooltip="value => `${value}%`"
+                  @input="handleScaleChange"
+              />
+            </el-col>
+            <el-col :span="8" class="text-right">
+              <span class="text-gray-600">{{ scale }}%</span>
+            </el-col>
+          </el-row>
+        </el-form-item>
+
+        <el-button
+            type="primary"
+            @click="downloadImage"
+            class="w-full mx-auto block"
+        >
+          下载调整后的图片
+        </el-button>
+      </el-form>
+    </el-card>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { UploadFilled, Loading } from '@element-plus/icons-vue'
 
 const fileInput = ref(null)
 const imageUrl = ref('')
+const originalImageUrl = ref('')
+const scale = ref(100)
 const width = ref(0)
 const height = ref(0)
-const maintainAspectRatio = ref(true)
-const aspectRatio = ref(1)
+const originalWidth = ref(0)
+const originalHeight = ref(0)
 const isLoading = ref(false)
 const errorMessage = ref('')
 
@@ -114,8 +103,8 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024
 const SUPPORTED_FORMATS = ['image/jpeg', 'image/png', 'image/webp']
 
 // 处理文件选择
-const handleFileSelect = (event) => {
-  const file = event.target.files[0]
+const handleFileSelect = (uploadFile) => {
+  const file = uploadFile.raw
   if (file) {
     processImage(file)
   }
@@ -145,17 +134,19 @@ const validateFile = (file) => {
 
 const processImage = (file) => {
   if (!validateFile(file)) return
-  
+
   isLoading.value = true
   errorMessage.value = ''
-  
+
   const reader = new FileReader()
   reader.onload = (e) => {
     const img = new Image()
     img.onload = () => {
+      originalWidth.value = img.width
+      originalHeight.value = img.height
       width.value = img.width
       height.value = img.height
-      aspectRatio.value = img.width / img.height
+      scale.value = 100
       isLoading.value = false
     }
     img.onerror = () => {
@@ -164,6 +155,7 @@ const processImage = (file) => {
     }
     img.src = e.target.result
     imageUrl.value = e.target.result
+    originalImageUrl.value = e.target.result
   }
   reader.onerror = () => {
     errorMessage.value = '图片读取失败，请重试'
@@ -172,18 +164,23 @@ const processImage = (file) => {
   reader.readAsDataURL(file)
 }
 
-// 处理宽度变化
-const handleWidthChange = () => {
-  if (maintainAspectRatio.value) {
-    height.value = Math.round(width.value / aspectRatio.value)
-  }
-}
+// 处理缩放比例变化
+const handleScaleChange = () => {
+  width.value = Math.round(originalWidth.value * scale.value / 100)
+  height.value = Math.round(originalHeight.value * scale.value / 100)
 
-// 处理高度变化
-const handleHeightChange = () => {
-  if (maintainAspectRatio.value) {
-    width.value = Math.round(height.value * aspectRatio.value)
+  // 更新预览图片
+  const canvas = document.createElement('canvas')
+  canvas.width = width.value
+  canvas.height = height.value
+
+  const ctx = canvas.getContext('2d')
+  const img = new Image()
+  img.onload = () => {
+    ctx.drawImage(img, 0, 0, width.value, height.value)
+    imageUrl.value = canvas.toDataURL('image/png')
   }
+  img.src = originalImageUrl.value
 }
 
 // 下载调整后的图片
@@ -191,7 +188,7 @@ const downloadImage = () => {
   const canvas = document.createElement('canvas')
   canvas.width = width.value
   canvas.height = height.value
-  
+
   const ctx = canvas.getContext('2d')
   const img = new Image()
   img.onload = () => {
