@@ -21,6 +21,9 @@
             <el-menu-item index="/divide">
               <span>图片分割</span>
             </el-menu-item>
+            <el-menu-item index="/crop">
+              <span>图片裁剪</span>
+            </el-menu-item>
           </el-menu>
         </el-col>
 
