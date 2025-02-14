@@ -18,6 +18,9 @@
             <el-menu-item index="/compress">
               <span>图片压缩</span>
             </el-menu-item>
+            <el-menu-item index="/divide">
+              <span>图片分割</span>
+            </el-menu-item>
           </el-menu>
         </el-col>
 
