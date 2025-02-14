@@ -3,8 +3,5 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
   modules: ['@element-plus/nuxt'],
-  css: ['element-plus/dist/index.css', 'vue-cropper/dist/index.css'],
-  build: {
-    transpile: ['vue-cropper']
-  }
+  css: ['element-plus/dist/index.css']
 })
