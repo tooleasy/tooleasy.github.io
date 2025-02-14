@@ -1,5 +1,5 @@
 <template>
-  <div class="container mx-auto p-4 max-w-2xl">
+  <div class="container">
     <el-card>
       <template #header>
         <div class="text-center">
@@ -9,7 +9,7 @@
 
       <!-- 图片上传区域 -->
       <el-upload
-          class="upload-area mb-6"
+          class="upload-area"
           drag
           :auto-upload="false"
           :show-file-list="false"
@@ -27,57 +27,56 @@
         </template>
       </el-upload>
 
-      <div v-if="isLoading" class="text-center py-8">
-        <el-icon class="is-loading mb-2" :size="24"><loading /></el-icon>
+      <div v-if="isLoading" class="text-center">
+        <el-icon class="is-loading" :size="24"><loading /></el-icon>
         <div class="text-gray-600">正在处理图片...</div>
       </div>
 
-      <div v-else-if="errorMessage" class="text-center py-8">
+      <div v-else-if="errorMessage" class="text-center">
         <el-alert
             :title="errorMessage"
             type="error"
             :closable="false"
-            class="mb-4"
         />
         <el-button type="primary" @click="errorMessage = ''">
           重试
         </el-button>
       </div>
 
-      <el-image
-          v-else-if="imageUrl"
-          :src="imageUrl"
-          fit="contain"
-          class="mx-auto block max-h-[300px] mt-4"
-      />
+      <div v-else-if="imageUrl" class="image-container text-center">
+        <!-- 图片预览 -->
+        <el-image
+            :src="imageUrl"
+            fit="contain"
+        />
 
-      <!-- 尺寸调整控制面板 -->
-      <el-form v-if="imageUrl" class="mt-6 w-full max-w-3xl mx-auto">
-        <el-form-item label="缩放比例" class="mb-6">
-          <el-row class="items-center justify-center">
-            <el-col :span="16">
-              <el-slider
-                  v-model="scale"
-                  :min="1"
-                  :max="100"
-                  :format-tooltip="value => `${value}%`"
-                  @input="handleScaleChange"
-              />
-            </el-col>
-            <el-col :span="8" class="text-right">
-              <span class="text-gray-600">{{ scale }}%</span>
-            </el-col>
-          </el-row>
-        </el-form-item>
+        <!-- 尺寸调整控制面板 -->
+        <el-form>
+          <el-form-item label="缩放比例" style="min-width: 400px;">
+            <el-row gutter={20} style="width: 100%;">
+              <el-col :span="18">
+                <el-slider
+                    v-model="scale"
+                    :min="1"
+                    :max="100"
+                    :format-tooltip="value => `${value}%`"
+                    @input="handleScaleChange"
+                />
+              </el-col>
+              <el-col :span="5" :offset="1" class="text-right" >
+                <span class="text-gray-600">{{ scale }}%</span>
+              </el-col>
+            </el-row>
+          </el-form-item>
 
-        <el-button
-            type="primary"
-            @click="downloadImage"
-            class="w-full mx-auto block"
-        >
-          下载调整后的图片
-        </el-button>
-      </el-form>
+          <el-button
+              type="primary"
+              @click="downloadImage"
+          >
+            下载调整后的图片
+          </el-button>
+        </el-form>
+      </div>
     </el-card>
   </div>
 </template>
@@ -201,3 +200,27 @@ const downloadImage = () => {
   img.src = imageUrl.value
 }
 </script>
+
+<style scoped>
+.image-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+el-image {
+  max-width: 100%;
+  max-height: 300px;
+}
+
+el-form {
+  width: 100%;
+  margin-top: 20px;
+}
+
+el-button {
+  margin-top: 20px;
+}
+</style>
