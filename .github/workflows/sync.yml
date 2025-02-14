@@ -27,7 +27,7 @@ jobs:
 
       - name: Add remote repositories
         run: |
-          git remote add origin git@github.com:tooleasy/tooleasy.github.io.git
+          git remote add github git@github.com:tooleasy/tooleasy.github.io.git
           
 
       - name: Add host keys to known_hosts
@@ -42,5 +42,5 @@ jobs:
 
       - name: Push to targets
         run: |
-          git push --force origin ${{ steps.get_branch.outputs.branch }}
+          git push --force github ${{ steps.get_branch.outputs.branch }}
          
