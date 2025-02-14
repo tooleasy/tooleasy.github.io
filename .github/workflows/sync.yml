@@ -1,9 +1,6 @@
 name: Sync Multi - Branches to Multiple Platforms via SSH
 
 on:
-  push:
-    branches:
-      - '*'  # 监听所有分支的推送事件
   workflow_dispatch:
 
 jobs:
