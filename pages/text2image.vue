@@ -147,7 +147,7 @@
       portrait: { width: '400px', height: '500px' },
       story: { width: '400px', height: '711px' }
     }
-  
+
     return {
       ...sizes[imageSize.value],
       backgroundColor: backgroundColor.value,
@@ -159,17 +159,17 @@
       borderRadius: '8px',
       boxShadow: '0 2px 12px 0 rgba(0, 0, 0, 0.1)',
       position: 'relative',
-      paddingBottom: index === pages.value.length - 1 ? `${padding.value.bottom}px` : '0'
+      paddingBottom: `${padding.value.bottom}px` // 修改: 确保 padding-bottom 正确应用
     }
   }
-  
+
   const textStyle = (index) => ({
     fontFamily: fontFamily.value,
-    fontSize: `${fontSize.value}px`,  // 文字大小为 14px
+    fontSize: `${fontSize.value}px`,
     color: textColor.value,
-    padding: `${padding.value.top}px ${padding.value.right}px ${padding.value.bottom}px ${padding.value.left}px`,
+    padding: `${padding.value.top}px ${padding.value.right}px ${padding.value.bottom}px ${padding.value.left}px`, // 修改: 确保 padding-bottom 正确应用
     margin: '20px',
-    textAlign: 'left',  // 将文本布局改为左对齐
+    textAlign: 'left',
     wordBreak: 'break-word',
     whiteSpace: 'pre-wrap',
     lineHeight: '1.8'
@@ -224,6 +224,8 @@
       // 最后处理剩余的当前行
       if (currentLine) {
         if (currentLineCount >= linesPerPage) {
+          console.log('currentLineCount:', currentLineCount)  
+          console.log('currentPage:', currentPage)
           // 如果当前页已满，保存并开始新的一页
           pagesContent.push(currentPage.trim());
           currentPage = currentLine;
