@@ -193,32 +193,54 @@
     const charsPerLine = Math.floor(containerWidth / (fontSize.value * 0.6));
     const linesPerPage = Math.floor(containerHeight / lineHeight);
   
-    const words = text.value.split(/\s+/);  // 按空格分词
+    // 将文本按换行符分割
+    const paragraphs = text.value.split('\n');
     const newPages = [];
     let currentPage = '';
     let currentLines = 0;
   
-    // 分页逻辑
-    words.forEach(word => {
-      const testLine = currentPage + word;
-      const testLineChars = testLine.length;
-  
-      // 如果当前行能容纳该词
-      if (testLineChars <= charsPerLine) {
-        currentPage += word + ' ';
-      } else {
+    paragraphs.forEach(paragraph => {
+      if (paragraph === '') {
         currentLines++;
         if (currentLines >= linesPerPage) {
           newPages.push(currentPage.trim());
-          currentPage = word + ' ';
+          currentPage = '';
           currentLines = 1;
         } else {
-          currentPage += '\n' + word + ' ';
+          currentPage += '\n';
         }
+        return;
+      }
+  
+      const words = paragraph.split(/(?<=\s)/); // 按空格分词，保留空格
+      words.forEach(word => {
+        const testLine = currentPage.split('\n').pop() + word;
+        
+        if (testLine.length <= charsPerLine) {
+          currentPage += word;
+        } else {
+          currentLines++;
+          if (currentLines >= linesPerPage) {
+            newPages.push(currentPage.trim());
+            currentPage = word;
+            currentLines = 1;
+          } else {
+            currentPage += '\n' + word;
+          }
+        }
+      });
+  
+      currentLines++;
+      if (currentLines >= linesPerPage) {
+        newPages.push(currentPage.trim());
+        currentPage = '';
+        currentLines = 0;
+      } else {
+        currentPage += '\n';
       }
     });
   
-    if (currentPage) {
+    if (currentPage.trim()) {
       newPages.push(currentPage.trim());
     }
   
