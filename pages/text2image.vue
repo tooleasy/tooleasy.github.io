@@ -95,6 +95,41 @@
             </el-radio-group>
           </el-form-item>
   
+          <!-- 水印设置 -->
+          <el-form-item label="水印设置">
+            <el-row :gutter="20">
+              <el-col :span="12">
+                <el-input v-model="watermarkText" placeholder="请输入水印文本" />
+              </el-col>
+              <el-col :span="12">
+                <el-select v-model="watermarkPosition" placeholder="选择水印位置">
+                  <el-option label="左上角" value="leftTop" />
+                  <el-option label="右上角" value="rightTop" />
+                  <el-option label="左下角" value="leftBottom" />
+                  <el-option label="右下角" value="rightBottom" />
+                </el-select>
+              </el-col>
+            </el-row>
+            <el-row :gutter="20" class="mt-4">
+              <el-col :span="12">
+                <div>水印大小</div>
+                <el-slider
+                  v-model="watermarkSize"
+                  :min="12"
+                  :max="36"
+                  :format-tooltip="value => `${value}px`"
+                />
+              </el-col>
+              <el-col :span="12">
+                <div>水印颜色</div>
+                <el-color-picker
+                  v-model="watermarkColor"
+                  show-alpha
+                />
+              </el-col>
+            </el-row>
+          </el-form-item>
+
           <!-- 边距设置 -->
           <el-form-item label="边距设置">
             <el-row :gutter="20">
@@ -143,6 +178,7 @@
           <div v-for="(page, index) in pages" :key="index" class="preview-container" :style="previewStyle(index)">
             <div ref="textCanvas" class="text-canvas" :style="textStyle(index)">
               {{ page || '预览效果' }}
+              <div class="watermark" :style="watermarkStyle()">{{ watermarkText }}</div>
             </div>
           </div>
         </div>
@@ -168,6 +204,11 @@
   const fontSize = ref(14)  // 设置默认字体大小为 14px
   const textColor = ref('#333333')
   const backgroundColor = ref('#ffffff')
+  // 水印设置
+  const watermarkText = ref('ToolEasy')
+  const watermarkSize = ref(14)
+  const watermarkColor = ref('rgba(0, 0, 0, 0.1)')
+  const watermarkPosition = ref('rightBottom') // 水印位置：leftTop, rightTop, leftBottom, rightBottom
   const imageSize = ref('square')
   const textCanvas = ref(null)
   const pages = ref([])
@@ -236,6 +277,26 @@
     };
     reader.readAsDataURL(file.raw);
   };
+
+  const watermarkStyle = () => {
+    const position = {
+      leftTop: { top: '10px', left: '10px' },
+      rightTop: { top: '10px', right: '10px' },
+      leftBottom: { bottom: '10px', left: '10px' },
+      rightBottom: { bottom: '10px', right: '10px' }
+    }[watermarkPosition.value]
+
+    return {
+      position: 'absolute',
+      fontSize: `${watermarkSize.value}px`,
+      color: watermarkColor.value,
+      ...position,
+      zIndex: 3,
+      pointerEvents: 'none',
+      userSelect: 'none',
+      fontFamily: 'Arial'
+    }
+  }
 
   const textStyle = (index) => ({
     fontFamily: fontFamily.value,

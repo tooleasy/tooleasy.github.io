@@ -5,7 +5,7 @@
       <el-col :span="24">
         <!-- el-col 用于创建列布局，span="24" 表示占据整行 -->
         <div class="text-center">
-          <p class="text-gray-600 text-sm">&copy; 2025 OutEasy</p>
+          <p class="text-gray-600 text-sm">&copy; 2025 ToolEasy</p>
         </div>
       </el-col>
     </el-row>

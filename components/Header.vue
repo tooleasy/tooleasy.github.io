@@ -5,7 +5,7 @@
         <el-col :span="2">
           <el-menu mode="horizontal" router :ellipsis="false">
             <el-menu-item index="/">
-              <span>OutEasy</span>
+              <span>ToolEasy</span>
             </el-menu-item>
           </el-menu>
         </el-col>
