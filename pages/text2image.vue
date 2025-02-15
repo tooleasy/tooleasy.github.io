@@ -174,79 +174,76 @@
     whiteSpace: 'pre-wrap',
     lineHeight: '1.8'
   })
-  
-  // 计算分页逻辑
+
   const calculatePages = () => {
     if (!text.value) {
-      pages.value = ['预览效果']
-      return
+      pages.value = ['预览效果'];
+      return;
     }
-  
-    const containerWidth = 400 - (padding.value.left + padding.value.right + 40); // 减去内外边距
-    const containerHeight = {
+
+    // 计算有效区域宽度和高度（减去上下左右的边距）
+    const effectiveWidth = 400 - (padding.value.left + padding.value.right + 40); // 宽度减去边距
+    const effectiveHeight = {
       square: 400,
       portrait: 500,
       story: 711
-    }[imageSize.value] - (padding.value.top + padding.value.bottom + 40); // 减去内外边距
-  
-    const lineHeight = fontSize.value * 1.8;
-    const charsPerLine = Math.floor(containerWidth / (fontSize.value * 0.6));
-    const linesPerPage = Math.floor(containerHeight / lineHeight);
-  
-    // 将文本按换行符分割
-    const paragraphs = text.value.split('\n');
-    const newPages = [];
-    let currentPage = '';
-    let currentLines = 0;
-  
+    }[imageSize.value] - (padding.value.top + padding.value.bottom + 40); // 高度减去边距
+
+    const lineHeight = fontSize.value * 1.8; // 每行的高度
+    const charsPerLine = Math.floor(effectiveWidth / (fontSize.value * 0.6)); // 每行能容纳的字符数
+    const linesPerPage = Math.floor(effectiveHeight / lineHeight); // 每页能显示的行数
+    console.log('linesPerPage:', linesPerPage)
+    const paragraphs = text.value.split('\n'); // 根据换行符分割文本段落
+    let pagesContent = []; // 用于存储分页后的内容
+    let currentPage = ''; // 当前页的内容
+    let currentLineCount = 0; // 当前页的行数
+
     paragraphs.forEach(paragraph => {
-      if (paragraph === '') {
-        currentLines++;
-        if (currentLines >= linesPerPage) {
-          newPages.push(currentPage.trim());
-          currentPage = '';
-          currentLines = 1;
-        } else {
-          currentPage += '\n';
-        }
-        return;
-      }
-  
-      const words = paragraph.split(/(?<=\s)/); // 按空格分词，保留空格
+      const words = paragraph.split(' '); // 按空格分割单词
+      let currentLine = ''; // 当前行的文本
+
       words.forEach(word => {
-        const testLine = currentPage.split('\n').pop() + word;
-        
-        if (testLine.length <= charsPerLine) {
-          currentPage += word;
+        // 如果当前行加上新单词不会超过每行的最大字符数，继续添加
+        if (currentLine.length + word.length + 1 <= charsPerLine) {
+          currentLine = currentLine ? currentLine + ' ' + word : word;
         } else {
-          currentLines++;
-          if (currentLines >= linesPerPage) {
-            newPages.push(currentPage.trim());
-            currentPage = word;
-            currentLines = 1;
+          // 当前行超过最大字符数，换行
+          if (currentLineCount >= linesPerPage) {
+            // 当前页已满，保存当前页并开始新的一页
+            pagesContent.push(currentPage.trim());
+            currentPage = currentLine; // 新的一页开始
+            currentLineCount = 1; // 重置行数计数
           } else {
-            currentPage += '\n' + word;
+            currentPage += '\n' + currentLine; // 将当前行加入当前页
+            currentLineCount++;
           }
+          currentLine = word; // 将当前单词放到新的一行
         }
       });
-  
-      currentLines++;
-      if (currentLines >= linesPerPage) {
-        newPages.push(currentPage.trim());
-        currentPage = '';
-        currentLines = 0;
-      } else {
-        currentPage += '\n';
+
+      // 最后处理剩余的当前行
+      if (currentLine) {
+        if (currentLineCount >= linesPerPage) {
+          // 如果当前页已满，保存并开始新的一页
+          pagesContent.push(currentPage.trim());
+          currentPage = currentLine;
+          currentLineCount = 1;
+        } else {
+          currentPage += '\n' + currentLine;
+          currentLineCount++;
+        }
       }
     });
-  
+
+    // 如果有剩余文本，添加到新的一页
     if (currentPage.trim()) {
-      newPages.push(currentPage.trim());
+      pagesContent.push(currentPage.trim());
     }
-  
-    pages.value = newPages.length > 0 ? newPages : ['预览效果'];
-  }
-  
+
+    // 确保分页内容不为空
+    pages.value = pagesContent.length > 0 ? pagesContent : ['预览效果'];
+  };
+
   // 延迟计算分页
   const debouncedCalculatePages = (() => {
     let timer;
@@ -357,19 +354,15 @@
   
   .text-canvas {
     max-width: 100%;
-    transition: all 0.3s ease;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: calc(100% - 40px);
-    height: calc(100% - 40px);
-    display: flex;
-    align-items: flex-start;
-    justify-content: flex-start;
-    text-align: left;  /* 改为左对齐 */
+    width: 100%;
+    height: 100%;
+    padding: inherit;
+    box-sizing: border-box;
+    overflow: hidden;
     word-break: break-word;
     white-space: pre-wrap;
+    line-height: 1.8;
+    position: relative;
   }
   .text-canvas img {
     display: inline-block;  /* 确保图片在文本行内显示 */
