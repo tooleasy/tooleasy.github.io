@@ -193,7 +193,7 @@
       portrait: { width: '400px', height: '500px' },
       story: { width: '400px', height: '711px' }
     }
-
+  
     const style = {
       ...sizes[imageSize.value],
       margin: '20px auto',
@@ -204,46 +204,15 @@
       borderRadius: '8px',
       boxShadow: '0 2px 12px 0 rgba(0, 0, 0, 0.1)',
       position: 'relative',
-      paddingBottom: `${padding.value.bottom}px`
+      '--background-color': backgroundColor.value,
+      '--background-image': backgroundImage.value ? 
+        (backgroundImage.value.startsWith('data:') ? 
+          `url(${backgroundImage.value})` : 
+          backgroundImage.value) : 
+        'none',
+      '--background-opacity': backgroundImage.value ? backgroundOpacity.value : 1
     }
-
-    // 处理背景图片和颜色
-    if (backgroundImage.value) {
-      if (backgroundImage.value.startsWith('data:')) {
-        // 处理上传的背景图片
-        style.backgroundImage = `url(${backgroundImage.value})`
-      } else {
-        // 处理预设的渐变背景
-        style.backgroundImage = backgroundImage.value
-      }
-      style.backgroundSize = 'cover'
-      style.backgroundPosition = 'center'
-      style.backgroundRepeat = 'no-repeat'
-
-      // 添加背景颜色叠加层
-      style.backgroundColor = backgroundColor.value
-      style.opacity = backgroundOpacity.value
-    } else {
-      // 如果没有背景图片，只使用背景颜色
-      style.backgroundColor = backgroundColor.value
-      style.opacity = backgroundOpacity.value
-    }
-
-    // 如果有背景图片，添加一个覆盖层来控制透明度
-    if (backgroundImage.value) {
-      style.position = 'relative'
-      style['&::before'] = {
-        content: '""',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: backgroundColor.value,
-        opacity: backgroundOpacity.value,
-        pointerEvents: 'none'
-      }
-    }
+  
     return style
   }
 
@@ -277,7 +246,9 @@
     textAlign: 'left',
     wordBreak: 'break-word',
     whiteSpace: 'pre-wrap',
-    lineHeight: '1.8'
+    lineHeight: '1.8',
+    position: 'relative', // 新增定位
+    zIndex: 2 // 确保文字在最上层
   })
 
   const calculatePages = () => {
@@ -472,12 +443,35 @@
     overflow: hidden;
     border-radius: 8px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .preview-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--background-color);
+    z-index: 1;
+  }
+  
+  .preview-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: var(--background-image);
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    opacity: var(--background-opacity);
+    z-index: 1;
   }
-  
   .text-canvas {
+    mix-blend-mode: normal !important; /* 确保文字不受混合模式影响 */
     max-width: 100%;
     width: 100%;
     height: 100%;
@@ -504,21 +498,5 @@
   }
   </style>
   
-// 添加 hexToRgb 辅助函数
-const hexToRgb = (hex) => {
-  // 移除 # 号
-  hex = hex.replace('#', '')
-  
-  // 将3位色值转换为6位
-  if (hex.length === 3) {
-    hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2]
-  }
-  
-  // 解析RGB值
-  const r = parseInt(hex.substring(0, 2), 16)
-  const g = parseInt(hex.substring(2, 4), 16)
-  const b = parseInt(hex.substring(4, 6), 16)
-  
-  return `${r}, ${g}, ${b}`
-}
+
   
