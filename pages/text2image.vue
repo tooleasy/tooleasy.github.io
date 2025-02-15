@@ -49,6 +49,43 @@
             <el-color-picker v-model="backgroundColor" />
           </el-form-item>
   
+          <!-- 背景设置 -->
+          <el-form-item label="背景设置">
+            <el-tabs>
+              <el-tab-pane label="预设背景">
+                <div class="preset-backgrounds">
+                  <el-radio-group v-model="backgroundImage" class="background-selector">
+                    <el-radio-button v-for="bg in presetBackgrounds" :key="bg.name" :label="bg.url">
+                      {{ bg.name }}
+                    </el-radio-button>
+                  </el-radio-group>
+                </div>
+              </el-tab-pane>
+              <el-tab-pane label="上传背景">
+                <el-upload
+                  class="background-uploader"
+                  action="#"
+                  :auto-upload="false"
+                  :show-file-list="false"
+                  accept="image/*"
+                  @change="handleBackgroundUpload"
+                >
+                  <el-button type="primary">选择背景图片</el-button>
+                </el-upload>
+              </el-tab-pane>
+            </el-tabs>
+            <div class="mt-4">
+              <div class="mb-2">背景透明度</div>
+              <el-slider
+                v-model="backgroundOpacity"
+                :min="0"
+                :max="1"
+                :step="0.1"
+                :format-tooltip="value => `${Math.round(value * 100)}%`"
+              />
+            </div>
+          </el-form-item>
+  
           <!-- 图片尺寸设置 -->
           <el-form-item label="图片尺寸">
             <el-radio-group v-model="imageSize" class="image-size-selector">
@@ -134,6 +171,15 @@
   const imageSize = ref('square')
   const textCanvas = ref(null)
   const pages = ref([])
+  const backgroundImage = ref('')
+  const backgroundOpacity = ref(0.5)
+  const presetBackgrounds = [
+    { name: '简约白', url: '' },
+    { name: '渐变蓝', url: 'linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%)' },
+    { name: '暖阳橙', url: 'linear-gradient(120deg, #f6d365 0%, #fda085 100%)' },
+    { name: '薄荷绿', url: 'linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%)' },
+    { name: '梦幻紫', url: 'linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%)' }
+  ]
   const padding = ref({
     top: 10,
     right: 10,
@@ -148,9 +194,8 @@
       story: { width: '400px', height: '711px' }
     }
 
-    return {
+    const style = {
       ...sizes[imageSize.value],
-      backgroundColor: backgroundColor.value,
       margin: '20px auto',
       display: 'flex',
       alignItems: 'center',
@@ -159,9 +204,69 @@
       borderRadius: '8px',
       boxShadow: '0 2px 12px 0 rgba(0, 0, 0, 0.1)',
       position: 'relative',
-      paddingBottom: `${padding.value.bottom}px` // 修改: 确保 padding-bottom 正确应用
+      paddingBottom: `${padding.value.bottom}px`
     }
+
+    // 处理背景图片和颜色
+    if (backgroundImage.value) {
+      if (backgroundImage.value.startsWith('data:')) {
+        // 处理上传的背景图片
+        style.backgroundImage = `url(${backgroundImage.value})`
+      } else {
+        // 处理预设的渐变背景
+        style.backgroundImage = backgroundImage.value
+      }
+      style.backgroundSize = 'cover'
+      style.backgroundPosition = 'center'
+      style.backgroundRepeat = 'no-repeat'
+
+      // 添加背景颜色叠加层
+      style.backgroundColor = backgroundColor.value
+      style.opacity = backgroundOpacity.value
+    } else {
+      // 如果没有背景图片，只使用背景颜色
+      style.backgroundColor = backgroundColor.value
+      style.opacity = backgroundOpacity.value
+    }
+
+    // 如果有背景图片，添加一个覆盖层来控制透明度
+    if (backgroundImage.value) {
+      style.position = 'relative'
+      style['&::before'] = {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: backgroundColor.value,
+        opacity: backgroundOpacity.value,
+        pointerEvents: 'none'
+      }
+    }
+    return style
   }
+
+  const handleBackgroundUpload = (file) => {
+    if (!file || !file.raw) {
+      ElMessage.error('上传文件失败，请重试');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (e.target && e.target.result) {
+        backgroundImage.value = e.target.result;
+        ElMessage.success('背景图片上传成功');
+      } else {
+        ElMessage.error('图片读取失败，请重试');
+      }
+    };
+    reader.onerror = () => {
+      ElMessage.error('图片读取失败，请重试');
+    };
+    reader.readAsDataURL(file.raw);
+  };
 
   const textStyle = (index) => ({
     fontFamily: fontFamily.value,
@@ -280,12 +385,11 @@
       const images = zip.folder('images');
   
       // 遍历每一页生成图片
+      const previewContainers = document.querySelectorAll('.preview-container');
       for (let i = 0; i < pages.value.length; i++) {
-        currentPage.value = i;
-  
         await new Promise(resolve => setTimeout(resolve, 100)); // 等待渲染
   
-        const canvas = await html2canvas(textCanvas.value.parentElement, {
+        const canvas = await html2canvas(previewContainers[i], {
           backgroundColor: backgroundColor.value,
           scale: 2 // 提高渲染质量
         });
@@ -368,6 +472,9 @@
     overflow: hidden;
     border-radius: 8px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
   }
   
   .text-canvas {
@@ -396,4 +503,22 @@
     white-space: nowrap;  /* 保证 emoji 后面的空格不会导致换行 */
   }
   </style>
+  
+// 添加 hexToRgb 辅助函数
+const hexToRgb = (hex) => {
+  // 移除 # 号
+  hex = hex.replace('#', '')
+  
+  // 将3位色值转换为6位
+  if (hex.length === 3) {
+    hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2]
+  }
+  
+  // 解析RGB值
+  const r = parseInt(hex.substring(0, 2), 16)
+  const g = parseInt(hex.substring(2, 4), 16)
+  const b = parseInt(hex.substring(4, 6), 16)
+  
+  return `${r}, ${g}, ${b}`
+}
   
