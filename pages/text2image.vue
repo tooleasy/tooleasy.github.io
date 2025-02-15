@@ -192,52 +192,68 @@
     const lineHeight = fontSize.value * 1.8; // 每行的高度
     const charsPerLine = Math.floor(effectiveWidth / (fontSize.value * 0.6)); // 每行能容纳的字符数
     const linesPerPage = Math.floor(effectiveHeight / lineHeight); // 每页能显示的行数
-    console.log('linesPerPage:', linesPerPage)
     const paragraphs = text.value.split('\n'); // 根据换行符分割文本段落
     let pagesContent = []; // 用于存储分页后的内容
     let currentPage = ''; // 当前页的内容
     let currentLineCount = 0; // 当前页的行数
+    let isFirstParagraph = true; // 标记是否是第一个段落
 
     paragraphs.forEach(paragraph => {
-      const words = paragraph.split(' '); // 按空格分割单词
-      let currentLine = ''; // 当前行的文本
-
-      words.forEach(word => {
-        // 如果当前行加上新单词不会超过每行的最大字符数，继续添加
-        if (currentLine.length + word.length + 1 <= charsPerLine) {
-          currentLine = currentLine ? currentLine + ' ' + word : word;
-        } else {
-          // 当前行超过最大字符数，换行
-          if (currentLineCount >= linesPerPage) {
-            // 当前页已满，保存当前页并开始新的一页
-            pagesContent.push(currentPage.trim());
-            currentPage = currentLine; // 新的一页开始
-            currentLineCount = 1; // 重置行数计数
-          } else {
-            currentPage += '\n' + currentLine; // 将当前行加入当前页
-            currentLineCount++;
-          }
-          currentLine = word; // 将当前单词放到新的一行
-        }
-      });
-
-      // 最后处理剩余的当前行
-      if (currentLine) {
+      // 处理段落之间的换行
+      if (!isFirstParagraph) {
         if (currentLineCount >= linesPerPage) {
-          console.log('currentLineCount:', currentLineCount)  
-          console.log('currentPage:', currentPage)
-          // 如果当前页已满，保存并开始新的一页
           pagesContent.push(currentPage.trim());
-          currentPage = currentLine;
-          currentLineCount = 1;
+          currentPage = '';
+          currentLineCount = 0;
+        }
+      }
+      isFirstParagraph = false;
+
+      if (paragraph.trim() === '') {
+        // 处理空行
+        if (currentLineCount >= linesPerPage) {
+          pagesContent.push(currentPage.trim());
+          currentPage = '';
+          currentLineCount = 0;
         } else {
-          currentPage += '\n' + currentLine;
+          //currentPage += '\n';
           currentLineCount++;
         }
+        return;
+      }
+
+      // 将段落按照最大字符数分割成多行
+      let remainingText = paragraph;
+      while (remainingText.length > 0) {
+        // 计算当前行可以容纳的文本
+        let currentLineText = remainingText.slice(0, charsPerLine);
+        let breakIndex = charsPerLine;
+
+        // 如果没有到达文本末尾，尝试在单词边界处截断
+        if (remainingText.length > charsPerLine) {
+          const lastSpaceIndex = currentLineText.lastIndexOf(' ');
+          if (lastSpaceIndex > 0) {
+            breakIndex = lastSpaceIndex + 1;
+            currentLineText = remainingText.slice(0, lastSpaceIndex);
+          }
+        }
+
+        // 检查是否需要新建页面
+        if (currentLineCount >= linesPerPage) {
+          pagesContent.push(currentPage.trim());
+          currentPage = currentLineText;
+          currentLineCount = 1;
+        } else {
+          currentPage += (currentPage ? '\n' : '') + currentLineText;
+          currentLineCount++;
+        }
+
+        // 更新剩余文本
+        remainingText = remainingText.slice(breakIndex).trim();
       }
     });
 
-    // 如果有剩余文本，添加到新的一页
+    // 处理最后一页
     if (currentPage.trim()) {
       pagesContent.push(currentPage.trim());
     }
