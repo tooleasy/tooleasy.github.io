@@ -3,7 +3,7 @@
     <el-card>
       <template #header>
         <div class="text-center">
-          <span class="text-xl font-medium">图片尺寸调整</span>
+          <span class="text-xl font-medium">图片缩放</span>
         </div>
       </template>
 

@@ -13,7 +13,7 @@
         <el-col :span="4">
           <el-menu mode="horizontal" router :ellipsis="false">
             <el-menu-item index="/resize">
-              <span>图片调整</span>
+              <span>图片缩放</span>
             </el-menu-item>
             <el-menu-item index="/compress">
               <span>图片压缩</span>
