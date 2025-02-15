@@ -24,6 +24,9 @@
             <el-menu-item index="/crop">
               <span>图片裁剪</span>
             </el-menu-item>
+            <el-menu-item index="/text2image">
+              <span>文字转图片</span>
+            </el-menu-item>
           </el-menu>
         </el-col>
 
