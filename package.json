@@ -15,8 +15,10 @@
     "browser-image-compression": "^2.0.2",
     "cropperjs": "^1.6.2",
     "element-plus": "^2.9.4",
+    "github-markdown-css": "^5.8.1",
     "html2canvas": "^1.4.1",
     "jszip": "^3.10.1",
+    "markdown-it": "^14.1.0",
     "nuxt": "^3.15.4",
     "vue": "^3.4.21",
     "vue-router": "^4.3.0"

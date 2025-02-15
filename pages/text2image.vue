@@ -55,7 +55,7 @@
               <el-tab-pane label="预设背景">
                 <div class="preset-backgrounds">
                   <el-radio-group v-model="backgroundImage" class="background-selector">
-                    <el-radio-button v-for="bg in presetBackgrounds" :key="bg.name" :label="bg.url">
+                    <el-radio-button v-for="bg in presetBackgrounds" :key="bg.name" :value="bg.url">
                       {{ bg.name }}
                     </el-radio-button>
                   </el-radio-group>
@@ -194,7 +194,7 @@
       story: { width: '400px', height: '711px' }
     }
   
-    const style = {
+    return {
       ...sizes[imageSize.value],
       margin: '20px auto',
       display: 'flex',
@@ -204,6 +204,7 @@
       borderRadius: '8px',
       boxShadow: '0 2px 12px 0 rgba(0, 0, 0, 0.1)',
       position: 'relative',
+      paddingBottom: `${padding.value.bottom}px`, // 修改: 确保 padding-bottom 正确应用
       '--background-color': backgroundColor.value,
       '--background-image': backgroundImage.value ? 
         (backgroundImage.value.startsWith('data:') ? 
@@ -213,7 +214,6 @@
       '--background-opacity': backgroundImage.value ? backgroundOpacity.value : 1
     }
   
-    return style
   }
 
   const handleBackgroundUpload = (file) => {
